@@ -8,6 +8,8 @@
 #include "card.h"
 #include "point.h"
 
+#define BASE_GRID_SIZE 3
+
 // Protótipo da função para limpar tela que está no main.c
 extern void limparTela(void);
 

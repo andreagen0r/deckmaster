@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 
-#define BoardSizeGrid 3
-
 void empty_space(void);
 void empty_line(const Board *m_board, const size_t m_row, const size_t m_mode);
 void board_render_columns(const Board *m_board, const size_t m_row, const size_t m_mode);
@@ -15,9 +13,9 @@ void board_init(Board *m_board)
 
     Card card = card_new_default();
 
-    for (size_t row = 0; row < BoardSizeGrid; ++row)
+    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
     {
-        for (size_t col = 0; col < BoardSizeGrid; ++col)
+        for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
         {
             m_board->position[row][col] = card;
             m_board->is_busy[row][col] = true;
@@ -27,9 +25,9 @@ void board_init(Board *m_board)
 
 void board_log(Board *m_board)
 {
-    for (size_t row = 0; row < BoardSizeGrid; ++row)
+    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
     {
-        for (size_t col = 0; col < BoardSizeGrid; ++col)
+        for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
         {
             printf("CARTA: [%zu, %zu] - %s \n", row, col, m_board->is_busy[row][col] ? "VAZIO" : "OCUPADO");
             card_log(m_board->position[row][col]);
@@ -52,9 +50,9 @@ size_t board_get_count(Board *m_board)
 {
     size_t board_count = 0;
 
-    for (size_t row = 0; row < BoardSizeGrid; ++row)
+    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
     {
-        for (size_t col = 0; col < BoardSizeGrid; ++col)
+        for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
         {
             if (!m_board->is_busy[row][col])
             {
@@ -104,7 +102,7 @@ void board_render(const Board *m_board, const unsigned int m_mode)
 
     puts("");
 
-    for (size_t row = 0; row < BoardSizeGrid; ++row)
+    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
     {
         puts("----------------------------------------------");
         board_render_columns(m_board, row, m_mode);
@@ -113,7 +111,7 @@ void board_render(const Board *m_board, const unsigned int m_mode)
     puts("----------------------------------------------");
 
     // Imprime o número da coluna
-    for (size_t row = 0; row < BoardSizeGrid; ++row)
+    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
     {
         printf("%8zu       ", row);
     }
@@ -130,7 +128,7 @@ void empty_space()
 
 void empty_line(const Board *m_board, const size_t m_row, const size_t m_mode)
 {
-    for (size_t col = 0; col < BoardSizeGrid; ++col)
+    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
     {
         char space[1] = "";
         char color_reset[8] = "";
@@ -184,7 +182,7 @@ void board_render_columns(const Board *m_board, const size_t m_row, const size_t
     }
 
     // CARTA LINHA 0
-    for (size_t col = 0; col < BoardSizeGrid; ++col)
+    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
     {
         if (!m_board->is_busy[m_row][col])
         {
@@ -228,7 +226,7 @@ void board_render_columns(const Board *m_board, const size_t m_row, const size_t
     puts("|"); // Borda direita
 
     // CARTA LINHA 3
-    for (size_t col = 0; col < BoardSizeGrid; ++col)
+    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
     {
         int power = m_board->position[m_row][col].power;
 
@@ -291,7 +289,7 @@ void board_render_columns(const Board *m_board, const size_t m_row, const size_t
     printf("|%2zu\n", m_row); // Borda direita
 
     // CARTA LINHA 5
-    for (size_t col = 0; col < BoardSizeGrid; ++col)
+    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
     {
         if (m_mode == COLOR_MODE)
         {
@@ -335,7 +333,7 @@ void board_render_columns(const Board *m_board, const size_t m_row, const size_t
     puts("|"); // Borda direita
 
     // CARTA LINHA 7
-    for (size_t col = 0; col < BoardSizeGrid; ++col)
+    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
     {
         if (!m_board->is_busy[m_row][col])
         {

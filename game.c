@@ -2,8 +2,6 @@
 
 static unsigned int m_render_mode = COLOR_MODE;
 
-#define GridSize 3
-
 // Menu principal do jogo, ponto de inínico de tudo
 void game_init(void);
 
@@ -302,9 +300,9 @@ int get_case(Point m_position)
 
     int count = 0;
 
-    for (int row = 0; row < GridSize; ++row)
+    for (int row = 0; row < BASE_GRID_SIZE; ++row)
     {
-        for (int col = 0; col < GridSize; ++col)
+        for (int col = 0; col < BASE_GRID_SIZE; ++col)
         {
             if (m_position.x == row && m_position.y == col)
             {
