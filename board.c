@@ -39,20 +39,7 @@ void board_log(Board *m_board)
 
 bool board_isFull(Board *m_board)
 {
-    size_t board_count = 0;
-
-    for (size_t row = 0; row < BoardSizeGrid; ++row)
-    {
-        for (size_t col =0; col < BoardSizeGrid; ++col)
-        {
-            if (!m_board->is_busy[row][col])
-            {
-                board_count++;
-            }
-        }
-    }
-
-    if (board_count >= 9)
+    if (board_get_count(m_board) >= 9)
     {
         m_board->is_full = true;
         return  true;
