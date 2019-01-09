@@ -2,8 +2,6 @@
 #define BOARD_H
 
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #include "card.h"
 #include "point.h"
@@ -28,7 +26,7 @@ void board_init(Board *m_board);
 bool board_isFull(Board *m_board);
 
 // Retorna a quantidade de cartas posicionadas no tabuleiro
-size_t board_count(Board *m_board);
+int board_count(Board *m_board);
 
 // Retorna "true" se a posição estiver vazia, senão retorna "false"
 bool board_space_isEmpty(Board *m_board, const Point m_position);
@@ -39,6 +37,6 @@ bool board_add_card(Board *m_board, Card card, const Point m_position);
 // Retorna "true" se a carta for removida do tabuleiro, senão retorna "false"
 bool board_remove_card(Board *m_board, const Point m_position);
 
-void board_render(const Board *m_board, const unsigned int m_mode);
+void board_render(const Board *m_board, const int m_mode);
 
 #endif // BOARD_H

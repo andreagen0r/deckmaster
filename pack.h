@@ -1,7 +1,6 @@
 #ifndef PACK_H
 #define PACK_H
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "card.h"
@@ -29,9 +28,9 @@ Card pack_top(Pack *root);
 bool pack_isEmpty(Pack *root);
 
 // Retorna a quantidade de itens na pilha
-size_t pack_size(void);
+int pack_size(void);
 
 // Imprime a próxima carta
-void pack_print_next_card(Pack *m_pack, size_t m_mode);
+void pack_print_next_card(Pack *m_pack, int m_mode);
 
 #endif // PACK_H

@@ -5,9 +5,9 @@
 void draw_divider(void);
 void draw_board(void);
 void draw_ruler(void);
-void draw_cards(const Board *m_board, const unsigned int m_mode);
-void print_card_line(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col, const int line);
-const char* get_color_card(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col);
+void draw_cards(const Board *m_board, int m_mode);
+void print_card_line(const Board *m_board, int m_mode, int m_row, int m_col, int line);
+const char* get_color_card(const Board *m_board, int m_mode, int m_row, int m_col);
 
 void set_cursor_position(const int m_x, const int m_y)
 {
@@ -27,9 +27,9 @@ void board_init(Board *m_board)
 
     Card card = card_new_default();
 
-    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
+    for (int row = 0; row < BASE_GRID_SIZE; ++row)
     {
-        for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
+        for (int col = 0; col < BASE_GRID_SIZE; ++col)
         {
             m_board->position[row][col] = card;
             m_board->is_busy[row][col] = true;
@@ -48,13 +48,13 @@ bool board_isFull(Board *m_board)
     return  false;
 }
 
-size_t board_count(Board *m_board)
+int board_count(Board *m_board)
 {
-    size_t board_count = 0;
+    int board_count = 0;
 
-    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
+    for (int row = 0; row < BASE_GRID_SIZE; ++row)
     {
-        for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
+        for (int col = 0; col < BASE_GRID_SIZE; ++col)
         {
             if (!m_board->is_busy[row][col])
             {
@@ -98,7 +98,7 @@ bool board_remove_card(Board *m_board, const Point m_position)
     return false;
 }
 
-void board_render(const Board *m_board, const unsigned int m_mode)
+void board_render(const Board *m_board, const int m_mode)
 {
     clear_screen();
 
@@ -122,11 +122,11 @@ void draw_divider()
 
 void draw_board()
 {
-    for(int i = 0; i < BASE_GRID_SIZE; ++i)
+    for (int i = 0; i < BASE_GRID_SIZE; ++i)
     {
         draw_divider();
 
-        for(int j = 0; j < CARD_HEIGHT; j++)
+        for (int j = 0; j < CARD_HEIGHT; j++)
         {
             for (int k = 0; k < BASE_GRID_SIZE; ++k)
             {
@@ -169,7 +169,7 @@ void draw_ruler()
 }
 
 
-void draw_cards(const Board *m_board, const unsigned int m_mode)
+void draw_cards(const Board *m_board, int m_mode)
 {
     int card_row_offset = 0;
     int card_col_offset = 0;
@@ -199,11 +199,12 @@ void draw_cards(const Board *m_board, const unsigned int m_mode)
 
 }
 
-void print_card_line(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col, const int line)
+void print_card_line(const Board *m_board, int m_mode, int m_row, int m_col, int line)
 {
     if (!m_board->is_busy[m_row][m_col])
     {
         switch (line) {
+
         case 0: {
             char arrow_top[8] = "";
 
@@ -219,7 +220,6 @@ void print_card_line(const Board *m_board, const unsigned int m_mode, const int 
             printf("       %s       ", arrow_top);
             break;
         }
-
 
         case 4: {
             char arrow_right[8] = "";
@@ -251,7 +251,6 @@ void print_card_line(const Board *m_board, const unsigned int m_mode, const int 
             break;
         }
 
-
         case 6: {
             char *m_element = NULL;
             char *m_status = NULL;
@@ -269,7 +268,6 @@ void print_card_line(const Board *m_board, const unsigned int m_mode, const int 
 
             break;
         }
-
 
         case 8: {
             char arrow_bottom[8] = "";
@@ -293,7 +291,7 @@ void print_card_line(const Board *m_board, const unsigned int m_mode, const int 
     }
 }
 
-const char* get_color_card(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col)
+const char* get_color_card(const Board *m_board, int m_mode, int m_row, int m_col)
 {
     char color_reset[8] = "";
     char *color_card = color_reset;

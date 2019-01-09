@@ -8,12 +8,12 @@ struct _pack {
     struct _pack *next;
 };
 
-static size_t pack_count = 0;
+static int pack_count = 0;
 
 Pack *pack_init()
 {
     Pack *pack = NULL;
-    for (size_t i = 0; i < PackSize; ++i)
+    for (int i = 0; i < PackSize; ++i)
     {
         pack_push(&pack, card_new_random());
     }
@@ -66,12 +66,12 @@ Card pack_top(Pack *root)
     return root->card;
 }
 
-size_t pack_size()
+int pack_size()
 {
     return pack_count;
 }
 
-void pack_print_next_card(Pack *m_pack, size_t m_mode)
+void pack_print_next_card(Pack *m_pack, int m_mode)
 {
     if (pack_size() <= 0)
     {

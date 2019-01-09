@@ -1,9 +1,6 @@
 #include "game.h"
 
-static unsigned int m_render_mode = COLOR_MODE;
-
-// Menu principal do jogo, ponto de inínico de tudo
-void game_init(void);
+static int m_render_mode = COLOR_MODE;
 
 // Seta as variáveis e chama o loop principal do jogo
 void make_game(void);
@@ -17,14 +14,14 @@ void render_mode_menu(void);
 void game_main_loop(Board *m_board, Pack *m_pack, Player *m_player1, Player *m_player2);
 
 // Executa a ação de fusão das cartas quando um jogador sobreescrever uma carta existente no tabuleiro
-void fusion(Board *m_board, const Card next_card, const Point m_position);
+void fusion(Board *m_board, Card next_card, Point m_position);
 
 // Retorna a posição no tabuleiro entre 0-9
 int get_case(Point m_position);
 
 // Função para encontrar as possíveis direções de ataque
 void get_direction(const Board *m_board, Point m_position, const int *possible_directions,
-         int *directions, const size_t loop );
+         int *directions, int m_loop );
 
 // Fução geral do atack chamada dentro do loop principal
 void make_attack(Board *m_board, Player *m_last_player, Point m_attacker);
@@ -32,8 +29,8 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_attacker);
 // Função que é chamada para cada caso de ataque.
 // Dentro dela é chamado (get_direction()) para saber qual carta atacar
 // Depois chama a função de ataque que realiza todos as verificações para contagem dos pontos
-void attack_case(Board *m_board, Player *m_player, const Point m_attacker,
-            const Point *m_defender, const int *m_possible_directions, int *m_directions, const size_t m_loop);
+void attack_case(Board *m_board, Player *m_player, Point m_attacker,
+            const Point *m_defender, const int *m_possible_directions, int *m_directions, int m_loop);
 
 // Função que efetivamente faz o ataque e conta os pontos de acordo com todas as regras de direções das setas
 // e dos elementos envolvidos no ataque
@@ -43,23 +40,23 @@ void attack(Board *m_board, Player *m_last_player, Point m_attacker, Point m_def
 void poisoned_damage(Board *m_board);
 
 // Retorna true se a carta de defesa possuir seta apontando para carta de ataque, senão retorna false
-bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defense);
+bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender);
 
 //
-bool defense_case(Board *m_board, const Point m_attacker, const Point m_defender,
-            const Point *m_attacks, const int *m_possible_directions, int *m_directions, const size_t m_loop);
+bool defense_case(Board *m_board, Point m_attacker, Point m_defender,
+            const Point *m_attacks, const int *m_possible_directions, int *m_directions, int m_loop);
 
 // Faz a contagem padrão dos pontos
-void score_case_default(Board *m_board, const Point m_attacker, const Point m_defender);
+void score_case_default(Board *m_board, Point m_attacker, Point m_defender);
 
 // Faz a contagem de pontos seguindo o segundo caso
-void score_case1(Board *m_board, const Point m_attacker, const Point m_defender);
+void score_case1(Board *m_board, Point m_attacker, Point m_defender);
 
 // Faz a contagem de pontos seguindo o terceiro caso
-void score_case2(Board *m_board, const Point m_defender);
+void score_case2(Board *m_board, Point m_defender);
 
 // Altera o status da carta atacada para um dos possíveis estados
-void elemental_damage(Board *m_board, const Point m_attacker, const Point m_defender);
+void elemental_damage(Board *m_board, Point m_attacker, Point m_defender);
 
 // Exibe o jogo na tela
 void render(const Board *m_board, Pack *m_pack,
@@ -72,14 +69,14 @@ void print_score(const Player *m_player1, const Player *m_player2);
 void print_scoreboard(const Player *m_player1, const Player *m_player2);
 
 // Exibe logo e mensagem de boas vindas
-void deckmaster_logo(unsigned int m_render);
+void deckmaster_logo(int m_render);
 
 void game_init()
 {
     bool m_exit = false;
 
     do {
-        size_t option = 0;
+        int option = 0;
 
         clear_screen();
         deckmaster_logo(TEXT_MODE);
@@ -96,7 +93,7 @@ void game_init()
         }
 
         printf("Digite uma opção: ");
-        scanf("%zd", &option);
+        scanf("%i", &option);
 
         switch (option) {
         case 0:
@@ -119,15 +116,12 @@ void game_init()
 
 void make_game()
 {
-    // Define a semente para geração de valores aleatórios
     srand( (unsigned)time(NULL) );
 
-    // Inicializa o tabuleiro
     Board m_board;
     board_init(&m_board);
 
     Pack *m_pack = NULL;
-    // Inicializa o baralho
     m_pack = pack_init();
 
     Player m_player1;
@@ -294,7 +288,7 @@ void fusion(Board *m_board, const Card next_card, const Point m_position)
     board_add_card(m_board, fused_card, m_position);
 }
 
-int get_case(Point m_position)
+int get_case(const Point m_position)
 {
     int out = -1;
 
@@ -318,9 +312,9 @@ int get_case(Point m_position)
 }
 
 void get_direction(const Board *m_board, const Point m_position,
-                    const int *possible_directions, int *directions, const size_t m_loop)
+                    const int *possible_directions, int *directions, const int m_loop)
 {
-    for (size_t i = 0; i < m_loop; ++i)
+    for (int i = 0; i < m_loop; ++i)
     {
         // Verifica se a direção de defesa é uma das posiveis
         if (m_board->position[m_position.x][m_position.y].arrows[possible_directions[i]])
@@ -335,7 +329,7 @@ void get_direction(const Board *m_board, const Point m_position,
     }
 }
 
-void make_attack(Board *m_board, Player *m_last_player, Point m_position)
+void make_attack(Board *m_board, Player *m_last_player, const Point m_attacker)
 {
     /*
      * ATAQUE
@@ -400,7 +394,7 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
 */
 
 
-    switch (get_case(m_position)) {
+    switch (get_case(m_attacker)) {
     case 0:
     {
         /*
@@ -425,9 +419,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -456,9 +450,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -487,9 +481,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -518,9 +512,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -549,9 +543,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[4];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -580,9 +574,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -611,9 +605,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -642,9 +636,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -673,9 +667,9 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (defenses) / sizeof(defenses[0]);
+        const int loop = sizeof (defenses) / sizeof(defenses[0]);
 
-        attack_case(m_board, m_last_player, m_position, defenses, possible_directions, directions, loop);
+        attack_case(m_board, m_last_player, m_attacker, defenses, possible_directions, directions, loop);
     }
 
         break;
@@ -687,11 +681,11 @@ void make_attack(Board *m_board, Player *m_last_player, Point m_position)
 }
 
 void attack_case(Board *m_board, Player *m_player, const Point m_attacker,
-            const Point *m_defender, const int *m_possible_directions, int *m_directions, const size_t m_loop)
+            const Point *m_defender, const int *m_possible_directions, int *m_directions, const int m_loop)
 {
     get_direction(m_board, m_attacker, m_possible_directions, m_directions, m_loop);
 
-    for (size_t row = 0; row < m_loop; ++row)
+    for (int row = 0; row < m_loop; ++row)
     {
         if (m_directions[row] != NO_DIRECTION)
         {
@@ -705,7 +699,7 @@ void attack_case(Board *m_board, Player *m_player, const Point m_attacker,
     poisoned_damage(m_board);
 }
 
-void attack(Board *m_board, Player *m_player, Point m_attacker, Point m_defender)
+void attack(Board *m_board, Player *m_last_player, const Point m_attacker, const Point m_defender)
 {
     // Verifica se o status da carta atacada está congelado
     if (m_board->position[m_defender.x][m_defender.y].status == FROZEN)
@@ -752,7 +746,7 @@ void attack(Board *m_board, Player *m_player, Point m_attacker, Point m_defender
         if (board_remove_card(m_board, m_defender))
         {
             // Adiciona ponto ao jogador que está atacando
-            player_add_score(m_player, 1);
+            player_add_score(m_last_player, 1);
         }
     }
 
@@ -783,7 +777,7 @@ void poisoned_damage(Board *m_board)
     }
 }
 
-bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
+bool is_match_arrow(Board *m_board, const Point m_attacker, const Point m_defender)
 {
     switch (get_case(m_defender)) {
     case 0:
@@ -810,7 +804,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -839,7 +833,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -868,7 +862,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -897,7 +891,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -926,7 +920,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[4];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -955,7 +949,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -984,7 +978,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -1013,7 +1007,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[3];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -1042,7 +1036,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
         int directions[2];
 
         // Define o tamanho dos array para fazer os loops necessários
-        const size_t loop = sizeof (attacks) / sizeof(attacks[0]);
+        const int loop = sizeof (attacks) / sizeof(attacks[0]);
 
         return defense_case(m_board, m_attacker, m_defender, attacks, possible_directions, directions, loop);
     }
@@ -1056,7 +1050,7 @@ bool is_match_arrow(Board *m_board, Point m_attacker, Point m_defender)
 }
 
 bool defense_case(Board *m_board, const Point m_attacker, const Point m_defender,
-                  const Point *m_attacks, const int *m_possible_directions, int *m_directions, const size_t m_loop)
+                  const Point *m_attacks, const int *m_possible_directions, int *m_directions, const int m_loop)
 {
     get_direction(m_board, m_attacker, m_possible_directions, m_directions, m_loop);
 
@@ -1104,7 +1098,6 @@ void score_case2(Board *m_board, const Point m_defender)
 
 void elemental_damage(Board *m_board, const Point m_attacker, const Point m_defender)
 {
-    // TODO
     /*
      * Dano Elemental
      * Ao atacar outra, após o cálculo de dano de ataque, se uma carta possui um dos três elementos, ela pode
@@ -1173,7 +1166,7 @@ void render(const Board *m_board, Pack *m_pack,
     board_render(m_board, m_render_mode);
 
     // Imprime a quantidade de cartas restantes no baralho
-    printf("           Cartas no deck: [%zu]\n", pack_size());
+    printf("           Cartas no deck: [%d]\n", pack_size());
 
     // Imprime a próxima carta
     pack_print_next_card(m_pack, m_render_mode);
@@ -1237,7 +1230,7 @@ void print_scoreboard(const Player *m_player1, const Player *m_player2)
     scanf("%s", m_exit);
 }
 
-void deckmaster_logo(unsigned int m_render)
+void deckmaster_logo(const int m_render)
 {
     char color_logo[8] = "";
     char color_reset[8] = "";

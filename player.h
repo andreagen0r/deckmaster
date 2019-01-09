@@ -1,9 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 typedef struct _player {
     char name[100];
