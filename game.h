@@ -13,7 +13,7 @@
 #include "player.h"
 
 // Protótipo da função para limpar tela que está no main.c
-extern void limparTela(void);
+extern void clear_screen(void);
 
 // Inicializa o jogo
 void game_init(void);

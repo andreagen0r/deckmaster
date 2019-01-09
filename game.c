@@ -81,7 +81,7 @@ void game_init()
     do {
         size_t option = 0;
 
-        limparTela();
+        clear_screen();
         deckmaster_logo(TEXT_MODE);
 
         puts("\n");
@@ -109,7 +109,7 @@ void game_init()
 
         case 9:
             m_exit = true;
-            limparTela();
+            clear_screen();
             puts("Obrigado por jogar Deckmaster, volte sempre!\n");
             exit(1);
         }
@@ -141,7 +141,7 @@ void make_game()
 
 void set_players_name(Player *m_player1, Player *m_player2)
 {
-    limparTela();
+    clear_screen();
 
     deckmaster_logo(m_render_mode);
 
@@ -161,7 +161,7 @@ void set_players_name(Player *m_player1, Player *m_player2)
 void render_mode_menu()
 {
     do {
-        limparTela();
+        clear_screen();
 
         deckmaster_logo(m_render_mode);
 
@@ -1191,7 +1191,7 @@ void print_score(const Player *m_player1, const Player *m_player2)
 
 void print_scoreboard(const Player *m_player1, const Player *m_player2)
 {
-    limparTela();
+    clear_screen();
     deckmaster_logo(m_render_mode);
 
     char color_logo[8] = "";

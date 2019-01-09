@@ -2,10 +2,24 @@
 
 #include <stdio.h>
 
-void empty_space(void);
-void empty_line(const Board *m_board, const size_t m_row, const size_t m_mode);
-void board_render_columns(const Board *m_board, const size_t m_row, const size_t m_mode);
+void draw_divider(void);
+void draw_board(void);
+void draw_ruler(void);
+void draw_cards(const Board *m_board, const unsigned int m_mode);
+void print_card_line(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col, const int line);
+const char* get_color_card(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col);
 
+void set_cursor_position(const int m_x, const int m_y)
+{
+#ifdef _WIN32
+    HANDLE Screen;
+    Screen = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD Position={m_x, m_y};
+    SetConsoleCursorPosition(Screen, Position);
+#else
+    printf("\033[%d;%dH", m_y, m_x);
+#endif
+}
 
 void board_init(Board *m_board)
 {
@@ -23,21 +37,9 @@ void board_init(Board *m_board)
     }
 }
 
-void board_log(Board *m_board)
-{
-    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
-    {
-        for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
-        {
-            printf("CARTA: [%zu, %zu] - %s \n", row, col, m_board->is_busy[row][col] ? "VAZIO" : "OCUPADO");
-            card_log(m_board->position[row][col]);
-        }
-    }
-}
-
 bool board_isFull(Board *m_board)
 {
-    if (board_get_count(m_board) >= 9)
+    if (board_count(m_board) >= (BASE_GRID_SIZE * BASE_GRID_SIZE))
     {
         m_board->is_full = true;
         return  true;
@@ -46,7 +48,7 @@ bool board_isFull(Board *m_board)
     return  false;
 }
 
-size_t board_get_count(Board *m_board)
+size_t board_count(Board *m_board)
 {
     size_t board_count = 0;
 
@@ -98,274 +100,217 @@ bool board_remove_card(Board *m_board, const Point m_position)
 
 void board_render(const Board *m_board, const unsigned int m_mode)
 {
-    limparTela();
+    clear_screen();
+
+    draw_board();
+
+    draw_ruler();
+
+    draw_cards(m_board, m_mode);
+}
+
+
+void draw_divider()
+{
+    for (int i = 0; i < BOARD_WIDTH; ++i)
+    {
+        printf("-");
+    }
 
     puts("");
-
-    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
-    {
-        puts("----------------------------------------------");
-        board_render_columns(m_board, row, m_mode);
-    }
-
-    puts("----------------------------------------------");
-
-    // Imprime o número da coluna
-    for (size_t row = 0; row < BASE_GRID_SIZE; ++row)
-    {
-        printf("%8zu       ", row);
-    }
-
-    puts("\n");
 }
 
-void empty_space()
+void draw_board()
 {
-    char space[1] = "";
-    printf("|"); // Borda esquerda
-    printf("%14s", space);
-}
-
-void empty_line(const Board *m_board, const size_t m_row, const size_t m_mode)
-{
-    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
+    for(int i = 0; i < BASE_GRID_SIZE; ++i)
     {
-        char space[1] = "";
-        char color_reset[8] = "";
-        char color_card[16] = "";
+        draw_divider();
 
-        if (!m_board->is_busy[m_row][col])
+        for(int j = 0; j < CARD_HEIGHT; j++)
         {
-            if (m_mode == COLOR_MODE)
+            for (int k = 0; k < BASE_GRID_SIZE; ++k)
             {
-                memcpy(color_reset, "\x1b[0m", sizeof(color_reset));
-
-                // Obtem a cor da carta de acordo com o tipo do elemento ou status
-                if (m_board->position[m_row][col].status == NO_STATUS)
+                printf("|");
+                for (int x = 0; x < CARD_WIDTH; ++x)
                 {
-                    memcpy(color_card, card_get_color_element(m_board->position[m_row][col].element), sizeof (color_card));
-                }
-                else
-                {
-                    memcpy(color_card, card_get_color_status(m_board->position[m_row][col].status), sizeof (color_card));
+                    printf(" ");
                 }
             }
 
-            printf("|"); // Borda esquerda
-
-            // Imprime a linha
-            printf("%s%s%14s%s" , color_reset, color_card, space, color_reset);
+            puts("|"); // Right edge
         }
-        else
+    }
+
+    draw_divider();
+}
+
+void draw_ruler()
+{
+    // Print row number
+    int posY = 6;
+    for (int row = 0; row < BASE_GRID_SIZE; ++row)
+    {
+        set_cursor_position(BOARD_WIDTH + 2, posY);
+        posY += CARD_HEIGHT + 1;
+        printf("%d", row);
+    }
+
+    // Print column number
+    int posX = 9;
+    for (int col = 0; col < BASE_GRID_SIZE; ++col)
+    {
+        set_cursor_position(posX, BOARD_HEIGHT + 1);
+        posX += CARD_WIDTH + 1;
+        printf("%d", col);
+    }
+    puts("\n");
+
+    set_cursor_position(0, BOARD_HEIGHT + 3);
+}
+
+
+void draw_cards(const Board *m_board, const unsigned int m_mode)
+{
+    int card_row_offset = 0;
+    int card_col_offset = 0;
+
+    for (int row = 0; row < BASE_GRID_SIZE; ++row)
+    {
+        for (int col = 0; col < BASE_GRID_SIZE; ++col)
         {
-            empty_space();
+            for (int card_line = 0; card_line < CARD_HEIGHT; ++card_line)
+            {
+                set_cursor_position(2 + card_col_offset + col, 2 + card_line + card_row_offset );
+
+                printf("%s", get_color_card(m_board, m_mode, row, col));
+
+                print_card_line(m_board, m_mode, row, col, card_line);
+            }
+
+            puts("\x1b[0m ");
+            card_col_offset += CARD_WIDTH;
+        }
+
+        card_row_offset += CARD_HEIGHT + 1;
+        card_col_offset = 0;
+    }
+
+    set_cursor_position(0, BOARD_HEIGHT + 3);
+
+}
+
+void print_card_line(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col, const int line)
+{
+    if (!m_board->is_busy[m_row][m_col])
+    {
+        switch (line) {
+        case 0: {
+            char arrow_top[8] = "";
+
+            if (m_mode == COLOR_MODE)
+            {
+                memcpy(arrow_top, m_board->position[m_row][m_col].arrows[TOP] ? "⬆︎" : " ", sizeof(arrow_top));
+            }
+            else
+            {
+                memcpy(arrow_top, m_board->position[m_row][m_col].arrows[TOP] ? "^" : " ", sizeof(arrow_top));
+            }
+
+            printf("       %s       ", arrow_top);
+            break;
+        }
+
+
+        case 4: {
+            char arrow_right[8] = "";
+            char arrow_left[8] = "";
+
+            int power = m_board->position[m_row][m_col].power;
+
+            if (m_mode == COLOR_MODE)
+            {
+                memcpy(arrow_right, m_board->position[m_row][m_col].arrows[RIGHT]? "➡︎" : " ", sizeof(arrow_right));
+                memcpy(arrow_left, m_board->position[m_row][m_col].arrows[LEFT]? "⬅︎" : " ", sizeof(arrow_left));
+            }
+            else
+            {
+                memcpy(arrow_right, m_board->position[m_row][m_col].arrows[RIGHT]? ">" : " ", sizeof(arrow_right));
+                memcpy(arrow_left, m_board->position[m_row][m_col].arrows[LEFT]? "<" : " ", sizeof(arrow_left));
+            }
+
+
+            if (power < 10)
+            {
+                printf(" %s     %d     %s ", arrow_left, power, arrow_right);
+            }
+            else
+            {
+                printf(" %s     %d    %s ", arrow_left, power, arrow_right);
+            }
+
+            break;
+        }
+
+
+        case 6: {
+            char *m_element = NULL;
+            char *m_status = NULL;
+
+            if ((m_board->position[m_row][m_col].status != NO_STATUS) && (!m_board->is_busy[m_row][m_col]))
+            {
+                m_status = card_get_status(m_board->position[m_row][m_col].status);
+                printf("%s", m_status);
+            }
+            else
+            {
+                m_element = card_get_element(m_board->position[m_row][m_col].element);
+                printf("%s", m_element);
+            }
+
+            break;
+        }
+
+
+        case 8: {
+            char arrow_bottom[8] = "";
+            if (m_mode == COLOR_MODE)
+            {
+                memcpy(arrow_bottom, m_board->position[m_row][m_col].arrows[BOTTOM]? "⬇︎" : " ", sizeof(arrow_bottom));
+            }
+            else
+            {
+                memcpy(arrow_bottom, m_board->position[m_row][m_col].arrows[BOTTOM]? "v" : " ", sizeof(arrow_bottom));
+            }
+            printf("       %s       ", arrow_bottom);
+            break;
+        }
+
+        default:
+            printf("               ");
+            break;
+
         }
     }
 }
 
-void board_render_columns(const Board *m_board, const size_t m_row, const size_t m_mode)
+const char* get_color_card(const Board *m_board, const unsigned int m_mode, const int m_row, const int m_col)
 {
-    char *m_element = NULL;
-    char *m_status = NULL;
-
-    char arrow_top[8] = "";
-    char arrow_right[8] = "";
-    char arrow_bottom[8] = "";
-    char arrow_left[8] = "";
-
     char color_reset[8] = "";
     char *color_card = color_reset;
 
     if (m_mode == COLOR_MODE)
     {
         memcpy(color_reset, "\x1b[0m", sizeof(color_reset));
-    }
 
-    // CARTA LINHA 0
-    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
-    {
-        if (!m_board->is_busy[m_row][col])
+        if (m_board->position[m_row][m_col].status == NO_STATUS)
         {
-            if (m_mode == COLOR_MODE)
-            {
-                // Obtem a cor da carta de acordo com o tipo do elemento ou status
-                if (m_board->position[m_row][col].status == NO_STATUS)
-                {
-                    color_card = card_get_color_element(m_board->position[m_row][col].element);
-                }
-                else
-                {
-                    color_card = card_get_color_status(m_board->position[m_row][col].status);
-                }
-
-                memcpy(arrow_top, m_board->position[m_row][col].arrows[TOP]? "⬆︎" : " ", sizeof(arrow_top));
-            }
-            else
-            {
-                memcpy(arrow_top, m_board->position[m_row][col].arrows[TOP]? "^" : " ", sizeof(arrow_top));
-            }
-
-            printf("|"); // Borda esquerda
-
-            // Imprime a linha
-            printf("%s%s      %s       %s",color_reset, color_card, arrow_top, color_reset);
+            color_card = card_get_color_element(m_board->position[m_row][m_col].element);
         }
         else
         {
-            empty_space();
+            color_card = card_get_color_status(m_board->position[m_row][m_col].status);
         }
     }
-    puts("|"); // Borda direita
 
-    // CARTA LINHA 1
-    empty_line(m_board, m_row, m_mode);
-    puts("|"); // Borda direita
-
-    // CARTA LINHA 2
-    empty_line(m_board, m_row, m_mode);
-    puts("|"); // Borda direita
-
-    // CARTA LINHA 3
-    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
-    {
-        int power = m_board->position[m_row][col].power;
-
-        if (m_mode == COLOR_MODE)
-        {
-            // Obtem a cor da carta de acordo com o tipo do elemento ou status
-            if (m_board->position[m_row][col].status == NO_STATUS)
-            {
-                color_card = card_get_color_element(m_board->position[m_row][col].element);
-            }
-            else
-            {
-                color_card = card_get_color_status(m_board->position[m_row][col].status);
-            }
-
-            memcpy(arrow_right, m_board->position[m_row][col].arrows[RIGHT]? "➡︎" : " ", sizeof(arrow_right));
-            memcpy(arrow_left, m_board->position[m_row][col].arrows[LEFT]? "⬅︎" : " ", sizeof(arrow_left));
-        }
-        else
-        {
-            memcpy(arrow_right, m_board->position[m_row][col].arrows[RIGHT]? ">" : " ", sizeof(arrow_right));
-            memcpy(arrow_left, m_board->position[m_row][col].arrows[LEFT]? "<" : " ", sizeof(arrow_left));
-        }
-
-
-        if (!m_board->is_busy[m_row][col])
-        {
-            if (power > 0)
-            {
-                // Verifica o valor e imprime com o espaço correto para não deformar o desenho do tabuleiro
-                if (power < 10)
-                {
-                    printf("|"); // Borda esquerda
-
-                    // Imprime setas e poder como unidade
-                    printf("%s%s %s    %d     %s %s", color_reset, color_card, arrow_left, power, arrow_right, color_reset);
-                }
-                else
-                {
-                    printf("|"); // Borda esquerda
-
-                    // Imprime setas e poder como dezena
-                    printf("%s%s %s    %d    %s %s", color_reset, color_card, arrow_left, power, arrow_right, color_reset);
-                }
-            }
-            else
-            {
-                empty_line(m_board, m_row, m_mode);
-            }
-        }
-        else
-        {
-            empty_space();
-        }
-    }
-    puts("|"); // Borda direita
-
-    // CARTA LINHA 4 - NÚMERO DA LINHA
-    empty_line(m_board, m_row, m_mode);
-    printf("|%2zu\n", m_row); // Borda direita
-
-    // CARTA LINHA 5
-    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
-    {
-        if (m_mode == COLOR_MODE)
-        {
-            // Obtem a cor da carta de acordo com o tipo do elemento ou status
-            if (m_board->position[m_row][col].status == NO_STATUS)
-            {
-                color_card = card_get_color_element(m_board->position[m_row][col].element);
-            }
-            else
-            {
-                color_card = card_get_color_status(m_board->position[m_row][col].status);
-            }
-        }
-
-        if (!m_board->is_busy[m_row][col])
-        {
-            // Imprime o STATUS ou ELEMENTO da carta
-            if ((m_board->position[m_row][col].status != NO_STATUS) && (!m_board->is_busy[m_row][col]))
-            {
-                m_status = card_get_status(m_board->position[m_row][col].status);
-                printf("|"); // Borda esquerda
-                printf("%s%s%s%s", color_reset, color_card, m_status, color_reset);
-            }
-            else
-            {
-                m_element = card_get_element(m_board->position[m_row][col].element);
-                printf("|"); // Borda esquerda
-                printf("%s%s%s%s", color_reset, color_card, m_element, color_reset);
-            }
-        }
-        else
-        {
-            empty_space();
-        }
-
-    }
-    puts("|"); // Borda direita
-
-    // CARTA LINHA 6
-    empty_line(m_board, m_row, m_mode);
-    puts("|"); // Borda direita
-
-    // CARTA LINHA 7
-    for (size_t col = 0; col < BASE_GRID_SIZE; ++col)
-    {
-        if (!m_board->is_busy[m_row][col])
-        {
-            if (m_mode == COLOR_MODE)
-            {
-                // Obtem a cor da carta de acordo com o tipo do elemento ou status
-                if (m_board->position[m_row][col].status == NO_STATUS)
-                {
-                    color_card = card_get_color_element(m_board->position[m_row][col].element);
-                }
-                else
-                {
-                    color_card = card_get_color_status(m_board->position[m_row][col].status);
-                }
-
-                memcpy(arrow_bottom, m_board->position[m_row][col].arrows[BOTTOM]? "⬇︎" : " ", sizeof(arrow_top));
-            }
-            else
-            {
-                memcpy(arrow_bottom, m_board->position[m_row][col].arrows[BOTTOM]? "v" : " ", sizeof(arrow_top));
-            }
-
-            printf("|"); // Borda esquerda
-
-            // Imprime a linha
-            printf("%s%s      %s       %s",color_reset, color_card, arrow_bottom, color_reset);
-        }
-        else
-        {
-            empty_space();
-        }
-    }
-    puts("|"); // Borda direita
+    return color_card;
 }
-

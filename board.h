@@ -9,27 +9,26 @@
 #include "point.h"
 
 #define BASE_GRID_SIZE 3
+#define BOARD_WIDTH (CARD_WIDTH * BASE_GRID_SIZE) + (BASE_GRID_SIZE + 1)
+#define BOARD_HEIGHT (CARD_HEIGHT * BASE_GRID_SIZE) + (BASE_GRID_SIZE + 1)
 
 // Protótipo da função para limpar tela que está no main.c
-extern void limparTela(void);
+extern void clear_screen(void);
 
 typedef struct _board {
-    Card position[3][3];
-    bool is_busy[3][3];
+    Card position[BASE_GRID_SIZE][BASE_GRID_SIZE];
+    bool is_busy[BASE_GRID_SIZE][BASE_GRID_SIZE];
     bool is_full;
 } Board;
 
 // Inicializa o tabuleiro com cartas default
 void board_init(Board *m_board);
 
-// Imprime as cartas posicionadas no tabuleiro
-void board_log(Board *m_board);
-
 // Retorna "true" se todas as casas do tabuleiro estiverem ocupadas, senão retorna "false"
 bool board_isFull(Board *m_board);
 
 // Retorna a quantidade de cartas posicionadas no tabuleiro
-size_t board_get_count(Board *m_board);
+size_t board_count(Board *m_board);
 
 // Retorna "true" se a posição estiver vazia, senão retorna "false"
 bool board_space_isEmpty(Board *m_board, const Point m_position);

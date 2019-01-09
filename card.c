@@ -65,16 +65,16 @@ char* card_get_status(const size_t m_status)
 
     switch (m_status) {
     case BURNED:
-        out = "  INCENDIADA  ";
+        out = "   INCENDIADA  ";
         break;
     case FROZEN:
-        out = "  CONGELADA   ";
+        out = "   CONGELADA   ";
         break;
     case POISONED:
-        out = "  ENVENENADA  ";
+        out = "   ENVENENADA  ";
         break;
     default:
-        out = "|             ";
+        out = "              ";
         break;
     }
 
@@ -86,16 +86,16 @@ char* card_get_element(const size_t m_element)
     char *out = NULL;
     switch (m_element) {
     case FIRE:
-        out = "     FOGO     ";
+        out = "      FOGO     ";
         break;
     case ICE:
-        out = "     GELO     ";
+        out = "      GELO     ";
         break;
     case POISON:
-        out = "    VENENO    ";
+        out = "     VENENO    ";
         break;
     default:
-        out = "              ";
+        out = "               ";
         break;
     }
 
