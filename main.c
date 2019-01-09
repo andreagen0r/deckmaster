@@ -3,15 +3,15 @@
 
 #include "game.h"
 
-#ifdef __APPLE__
-void limparTela(void)
-{
-    system("clear");
-}
-#elif _WIN32
-void limparTela()
+#ifdef _WIN32
+void clear_screen(void)
 {
     system("cls");
+}
+#else
+void clear_screen()
+{
+    system("clear");
 }
 #endif
 
