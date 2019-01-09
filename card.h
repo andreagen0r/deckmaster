@@ -8,6 +8,9 @@
 
 #include "point.h"
 
+#define CARD_WIDTH 15
+#define CARD_HEIGHT 9
+
 enum Status {
     NO_STATUS,
     BURNED,
